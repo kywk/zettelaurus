@@ -2,16 +2,16 @@ const walkSync = require("walk-sync");
 const fs = require("fs");
 const path = require("path");
 const cytoscape = require("cytoscape");
-const titleCapitalize = require('title')
+const titleCapitalize = require("title");
 
 const DEFAULT_OPTIONS = {
   // Some defaults.
 };
 
 var slugMethod = function sluggify(filepath) {
-  const slug = filepath.replace(/ /g, '-').toLowerCase();
+  const slug = filepath.replace(/ /g, "-").toLowerCase();
   return slug;
-}
+};
 
 function initCy() {
   var cy = cytoscape({});
@@ -24,16 +24,16 @@ function fileNameWithoutExtension(filePath) {
 }
 
 function getTitle(pathNoExt) {
-  var title = titleCapitalize(pathNoExt.replace(/-/g, ' '));
+  var title = titleCapitalize(pathNoExt.replace(/-/g, " "));
   const length = 30;
-  title = title.length > length ? title.substring(0, length - 3) + "..." : title;
+  title =
+    title.length > length ? title.substring(0, length - 3) + "..." : title;
   return title;
 }
 
-
 function getWikiLinks(filePath) {
   var fileContents = fs.readFileSync(filePath, "utf-8");
-  const regexp = /\[\[([A-Za-z0-9 -]*)\]\]/g;
+  const regexp = /\[\[([A-Za-z0-9 -_]*)\]\]/g;
   const wikilinks = [...fileContents.matchAll(regexp)];
   return wikilinks;
 }
@@ -45,7 +45,7 @@ function createGraph(docsDir, docsUrl, cyJsonFile) {
 
   // Collect all wikis data
   mdFiles.forEach(function (filePath, i) {
-    const fileName = fileNameWithoutExtension(filePath)
+    const fileName = fileNameWithoutExtension(filePath);
     const title = getTitle(fileName);
     const slug = slugMethod(fileName);
     const url = docsUrl + filePath.replace(".md", "");
@@ -66,9 +66,14 @@ function createGraph(docsDir, docsUrl, cyJsonFile) {
       const slug = slugMethod(wikilink[1]);
       const linkedWiki = wikis[slug];
       try {
-        cy.add({ data: { id: 'e-' + sourceWiki.id + "-" + linkedWiki.id, source: sourceWiki.id, target: linkedWiki.id } });
-      }
-      catch (error) {
+        cy.add({
+          data: {
+            id: "e-" + sourceWiki.id + "-" + linkedWiki.id,
+            source: sourceWiki.id,
+            target: linkedWiki.id,
+          },
+        });
+      } catch (error) {
         // console.log("Broken Link: " + error);
       }
     });
@@ -92,10 +97,10 @@ module.exports = function (context, opts) {
     // If you're writing your own local plugin, you will want it to
     // be unique in order not to potentially conflict with imported plugins.
     // A good way will be to add your own project name within.
-    name: 'docusaurus-plugin-wikigraph',
+    name: "docusaurus-plugin-wikigraph",
 
     getThemePath() {
-      return path.resolve(__dirname, './theme');
+      return path.resolve(__dirname, "./theme");
     },
 
     async loadContent() {
@@ -103,7 +108,7 @@ module.exports = function (context, opts) {
       // This is also executed after every file changes during hot reload
       // You can return a JavaScript object that will be passed to contentLoaded hook.
 
-      if (typeof (opts.slugMethod) === typeof (Function)) {
+      if (typeof opts.slugMethod === typeof Function) {
         slugMethod = opts.slugMethod;
       }
 
@@ -114,7 +119,7 @@ module.exports = function (context, opts) {
       if (!fs.existsSync(context.generatedFilesDir)) {
         fs.mkdirSync(context.generatedFilesDir);
       }
-      const cyJsonFile = context.generatedFilesDir + '/cy.json';
+      const cyJsonFile = context.generatedFilesDir + "/cy.json";
 
       createGraph(docsDir, docsUrl, cyJsonFile);
 
@@ -126,13 +131,12 @@ module.exports = function (context, opts) {
       // `actions` are set of functional API provided by Docusaurus (e.g. addRoute)
       const { addRoute } = actions;
 
-      addRoute(
-        {
-          path: '/graph',
-          component: '@theme/GraphVisualization',
-          modules: { graph: content, },
-          exact: false,
-        });
+      addRoute({
+        path: "/graph",
+        component: "@theme/GraphVisualization",
+        modules: { graph: content },
+        exact: false,
+      });
     },
 
     async postBuild(props) {
